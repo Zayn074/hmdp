@@ -1,0 +1,12 @@
+services:
+  frontend:
+    build:
+      context: ./frontend
+    image: hmdp-frontend:local
+    container_name: hmdp-frontend
+    ports:
+      - "8080:80"
+    # Linux Docker Engine 需要此映射；Docker Desktop 会原生提供同名主机。
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
