@@ -16,7 +16,7 @@ public class LoginInterceptor implements HandlerInterceptor {
         //1.获取session
         HttpSession session = request.getSession();
         //2.获取session用户
-        User user = (User) session.getAttribute("user");
+        Object user = session.getAttribute("user");
         //3.判断用户是否存在
         if (user == null){
             //4.不存在拦截
@@ -25,11 +25,10 @@ public class LoginInterceptor implements HandlerInterceptor {
         }
 
         //5.存在，将用户信息保存到ThreadLocal
-        UserDTO userDTO = BeanUtil.copyProperties(user, UserDTO.class);
-        UserHolder.saveUser(userDTO);
+        UserHolder.saveUser((UserDTO)user);
         //6.放行
 
-        return HandlerInterceptor.super.preHandle(request, response, handler);
+        return true;
 
     }
 
