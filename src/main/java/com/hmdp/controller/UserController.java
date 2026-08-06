@@ -66,7 +66,6 @@ public class UserController {
      */
     @PostMapping("/logout")
     public Result logout(HttpServletRequest request){
-        // TODO 实现登出功能
         String token = RedisConstants.LOGIN_USER_KEY + request.getHeader("authorization");
         stringRedisTemplate.delete(token);
         return Result.ok();
