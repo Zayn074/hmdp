@@ -17,55 +17,15 @@ import java.util.concurrent.TimeUnit;
 
 public class LoginInterceptor implements HandlerInterceptor {
 
-    private StringRedisTemplate stringRedisTemplate;
-
-    public LoginInterceptor(StringRedisTemplate stringRedisTemplate) {
-        this.stringRedisTemplate = stringRedisTemplate;
-    }
-
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
-//        //1.获取session
-//        HttpSession session = request.getSession();
-//        //2.获取session用户
-//        Object user = session.getAttribute("user");
-//        //3.判断用户是否存在
-//        if (user == null){
-//            //4.不存在拦截
-//            response.setStatus(401);
-//            return false;
-//        }
-//
-//        //5.存在，将用户信息保存到ThreadLocal
-//        UserHolder.saveUser((UserDTO)user);
-//        //6.放行
-
-
-        //1.获取请求头中的token
-        String token =request.getHeader("authorization");
-        if(StrUtil.isBlank(token)){
+        //判断是否要拦截：ThreadLocal中是否存在用户
+        if(UserHolder.getUser()==null){
             response.setStatus(401);
+            //没有用户拦截
             return false;
         }
-
-        //2.基于token获取redis中的用户
-        Map<Object, Object> userMap = stringRedisTemplate.opsForHash()
-                .entries(RedisConstants.LOGIN_USER_KEY + token);
-        //3判断用户是否存在
-        if(userMap.isEmpty()){
-            //4.不存在拦截，返回401
-            response.setStatus(401);
-            return false;
-        }
-        //5.将查询到的hash数据转为DTO对象
-        UserDTO userDTO = BeanUtil.fillBeanWithMap(userMap, new UserDTO(), false);
-        //6.存在，将用户信息保存到ThreadLocal
-        UserHolder.saveUser(userDTO);
-        //7.刷新token有效期
-        stringRedisTemplate.expire(RedisConstants.LOGIN_USER_KEY + token,RedisConstants.LOGIN_USER_TTL, TimeUnit.MINUTES);
-        //8.放行
-
-
+        //有用户放行
         return true;
 
     }
