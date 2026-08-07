@@ -11,6 +11,7 @@ import com.hmdp.utils.RedisConstants;
 import io.netty.util.internal.StringUtil;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.util.concurrent.TimeUnit;
@@ -51,5 +52,19 @@ public class ShopServiceImpl extends ServiceImpl<ShopMapper, Shop> implements IS
                 RedisConstants.CACHE_SHOP_TTL, TimeUnit.MINUTES);
         //7.返回结果
         return Result.ok(shop);
+    }
+
+    @Transactional
+    @Override
+    public Result update(Shop shop) {
+        //1.更新数据库
+        updateById(shop);
+        Long id = shop.getId();
+        if(id == null){
+            return Result.fail("店铺id不能为空");
+        }
+        //2.删除缓存
+        stringRedisTemplate.delete(RedisConstants.CACHE_SHOP_KEY + id);
+        return Result.ok();
     }
 }
